@@ -17,10 +17,10 @@ TGT_POS = list(x=0, y=100)
 # speed unit is in kn = nmi/h
 BOAT_SPEED = 10
 TIDE_SPEED_X = 5
-TIDE_SLOT_DURATION = "5h" # For square tide only
+TIDE_SLOTS_DURATION_RATIO = 10/12 # For square tide only
 # TIDE_TYPE = "SIN"
-TIDE_TYPE = "COS2"
-# TIDE_TYPE = "SQUARE"
+# TIDE_TYPE = "COS2"
+TIDE_TYPE = "SQUARE"
 
 # Import functions
 # ----------------
@@ -61,8 +61,8 @@ DF$tide_speed_x = switch(TIDE_TYPE,
        },
        SQUARE = function() {
          d = rep(0, times=n_points)
-         d[DF$time_ms<parseDurationsToMillis(TIDE_SLOT_DURATION)] = +TIDE_SPEED_X
-         d[DF$time_ms>duration_ms-parseDurationsToMillis(TIDE_SLOT_DURATION)] = -TIDE_SPEED_X
+         d[DF$time_ms<TIDE_SLOTS_DURATION_RATIO/2*duration_ms] = +TIDE_SPEED_X
+         d[DF$time_ms>(1-TIDE_SLOTS_DURATION_RATIO/2)*duration_ms] = -TIDE_SPEED_X
          d
        })()
 
