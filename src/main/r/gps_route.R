@@ -98,13 +98,6 @@ arrival.trad = min(which(is.na(DF.trad$brg)))
 
 # Plotting
 
-plot(DF.gps$x, DF.gps$y, type="l", col="red", main="Course",
-     xlim=c(min(DF.gps$x, DF.trad$x), max(DF.gps$x, DF.trad$x)),
-     ylim=c(min(DF.gps$y, DF.trad$y), max(DF.gps$y, DF.trad$y))
-)
-lines(DF.trad$x, DF.trad$y, type="l", col="blue")
-points(c(SRC_POS$x, TGT_POS$x), c(SRC_POS$y, TGT_POS$y), type="p")
-
 plot(DF$time_ms/HOUR_MS, DF.gps$y, type="l", col="red", xlab="time(h)", main="Progression(y)",
      ylim=c(min(DF.gps$y, DF.trad$y), max(DF.gps$y, DF.trad$y))
 )
@@ -125,3 +118,10 @@ plot(DF$time_ms/HOUR_MS, DF.gps$brg/pi*180, type="l", col="red", xlab="time(h)",
 lines(DF$time_ms/HOUR_MS, DF.trad$brg/pi*180, type="l", col="blue")
 points(DF$time_ms[c(1, arrival.gps-1)]/HOUR_MS, DF.gps$brg[c(1, arrival.gps-1)]/pi*180, type="p", col="red")
 points(DF$time_ms[c(1, arrival.trad-1)]/HOUR_MS, DF.trad$brg[c(1, arrival.trad-1)]/pi*180, type="p", col="blue")
+
+plot(DF.gps$x, DF.gps$y, type="l", col="red", main="Course",
+     xlim=c(min(DF.gps$x, DF.trad$x), max(DF.gps$x, DF.trad$x)),
+     ylim=c(min(DF.gps$y, DF.trad$y), max(DF.gps$y, DF.trad$y))
+)
+lines(DF.trad$x, DF.trad$y, type="l", col="blue")
+points(c(SRC_POS$x, TGT_POS$x), c(SRC_POS$y, TGT_POS$y), type="p")
