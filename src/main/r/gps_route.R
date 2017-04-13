@@ -18,7 +18,8 @@ TGT_POS = list(x=0, y=100)
 BOAT_SPEED = 10
 TIDE_SPEED_X = 5
 TIDE_SLOT_DURATION = "5h" # For square tide only
-TIDE_TYPE = "SIN"
+# TIDE_TYPE = "SIN"
+TIDE_TYPE = "COS2"
 # TIDE_TYPE = "SQUARE"
 
 # Import functions
@@ -54,6 +55,9 @@ DF$time_ms = DF$seq * time_interval_ms
 DF$tide_speed_x = switch(TIDE_TYPE,
        SIN = function() {
          TIDE_SPEED_X * sin(2*pi*(DF$seq-1)/(n_points-1))
+       },
+       COS2 = function() {
+         TIDE_SPEED_X * cos(pi*(DF$seq-1)/(n_points-1))
        },
        SQUARE = function() {
          d = rep(0, times=n_points)
@@ -97,6 +101,7 @@ simulate = function(i, df, bearing_FUN) {
 
 CONSTANT_BEARING = switch(TIDE_TYPE,
   SIN = pi/2+0.047, # optimal value obtained by trial and error!
+  COS2 = pi/2+0.095, # optimal value obtained by trial and error!
   SQUARE = pi/2+0.095 # optimal value obtained by trial and error!
 )
 for (i in seq(1, n_points-1)) {
@@ -138,3 +143,4 @@ plot(DF.gps$x, DF.gps$y, type="l", col="red", main="Course",
 )
 lines(DF.trad$x, DF.trad$y, type="l", col="blue")
 points(c(SRC_POS$x, TGT_POS$x), c(SRC_POS$y, TGT_POS$y), type="p")
+legend("left", legend=c("Traditional", "GPS"), lty=c(1,1), col=c("blue", "red"), y.intersp=0.5)
