@@ -22,6 +22,11 @@ TIDE_SLOTS_DURATION_RATIO = 10/12 # For square tide only
 # TIDE_TYPE = "COS2"
 TIDE_TYPE = "SQUARE"
 
+IMG_WIDTH = 512
+IMG_HEIGHT = 512
+
+tgt.base.dir.relpath = "../../../generated/img"
+
 # Import functions
 # ----------------
 
@@ -42,6 +47,9 @@ rowToVector = function(row) {
 
 # Preparation
 # -----------
+
+tgt.dir = file.path(script.dir, tgt.base.dir.relpath, TIDE_TYPE)
+dir.create(tgt.dir, recursive=T)
 
 HOUR_MS = parseDurationsToMillis("1h")
 
@@ -114,8 +122,11 @@ arrival.trad = min(which(is.na(DF.trad$brg)))
 
 # Plotting
 
+png(filename=file.path(tgt.dir, "tide.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
 plot(DF$tide_speed_x, DF$time_ms/HOUR_MS, type="l", ylab="time(h)", main="Tide(kn)")
+dev.off()
 
+png(filename=file.path(tgt.dir, "progression_y.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
 plot(DF$time_ms/HOUR_MS, DF.gps$y, type="l", col="red", xlab="time(h)", main="Progression(y)",
      ylim=c(min(DF.gps$y, DF.trad$y), max(DF.gps$y, DF.trad$y))
 )
@@ -124,7 +135,9 @@ points(DF$time_ms[1]/HOUR_MS, DF.gps$y[1], type="p")
 points(DF$time_ms[arrival.gps]/HOUR_MS, DF.gps$y[arrival.gps], type="p", col="red")
 points(DF$time_ms[arrival.trad]/HOUR_MS, DF.trad$y[arrival.trad], type="p", col="blue")
 legend("topleft", legend=sprintf("Delay = %.0f min", (DF$time_ms[arrival.gps]-DF$time_ms[arrival.trad])/1000/60))
+dev.off()
 
+png(filename=file.path(tgt.dir, "progression_x.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
 plot(DF.gps$x, DF$time_ms/HOUR_MS, type="l", col="red", ylab="time(h)", main="Progression(x)",
      xlim=c(min(DF.gps$x, DF.trad$x), max(DF.gps$x, DF.trad$x))
 )
@@ -132,12 +145,16 @@ lines(DF.trad$x, DF$time_ms/HOUR_MS, type="l", col="blue")
 points(DF.gps$x[1], DF$time_ms[1]/HOUR_MS, type="p")
 points(DF.gps$x[arrival.gps], DF$time_ms[arrival.gps]/HOUR_MS, type="p", col="red")
 points(DF.trad$x[arrival.trad], DF$time_ms[arrival.trad]/HOUR_MS, type="p", col="blue")
+dev.off()
 
+png(filename=file.path(tgt.dir, "bearing.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
 plot(DF$time_ms/HOUR_MS, DF.gps$brg/pi*180, type="l", col="red", xlab="time(h)", ylab="degrees", main="Bearing")
 lines(DF$time_ms/HOUR_MS, DF.trad$brg/pi*180, type="l", col="blue")
 points(DF$time_ms[c(1, arrival.gps-1)]/HOUR_MS, DF.gps$brg[c(1, arrival.gps-1)]/pi*180, type="p", col="red")
 points(DF$time_ms[c(1, arrival.trad-1)]/HOUR_MS, DF.trad$brg[c(1, arrival.trad-1)]/pi*180, type="p", col="blue")
+dev.off()
 
+png(filename=file.path(tgt.dir, "course.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
 plot(DF.gps$x, DF.gps$y, type="l", col="red", main="Course",
      xlim=c(min(DF.gps$x, DF.trad$x), max(DF.gps$x, DF.trad$x)),
      ylim=c(min(DF.gps$y, DF.trad$y), max(DF.gps$y, DF.trad$y))
@@ -145,3 +162,4 @@ plot(DF.gps$x, DF.gps$y, type="l", col="red", main="Course",
 lines(DF.trad$x, DF.trad$y, type="l", col="blue")
 points(c(SRC_POS$x, TGT_POS$x), c(SRC_POS$y, TGT_POS$y), type="p")
 legend("left", legend=c("Traditional", "GPS"), lty=c(1,1), col=c("blue", "red"), y.intersp=0.5)
+dev.off()
