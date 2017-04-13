@@ -161,5 +161,5 @@ plot(DF.gps$x, DF.gps$y, type="l", col="red", main="Course",
 )
 lines(DF.trad$x, DF.trad$y, type="l", col="blue")
 points(c(SRC_POS$x, TGT_POS$x), c(SRC_POS$y, TGT_POS$y), type="p")
-legend("left", legend=c("Traditional", "GPS"), lty=c(1,1), col=c("blue", "red"), y.intersp=0.5)
+legend("left", legend=c("Traditional", "GPS"), lty=c(1,1), col=c("blue", "red"))
 dev.off()
