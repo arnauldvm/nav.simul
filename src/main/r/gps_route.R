@@ -16,10 +16,7 @@ TGT_POS = list(x=0, y=100)
 
 # speed unit is in kn = nmi/h
 BOAT_SPEED = 10
-TIDE1_SPEED_X = +5
-TIDE1_DURATION = "5h"
-TIDE2_SPEED_X = -5
-TIDE2_DURATION = "5h"
+TIDE_SPEED_X = 5
 
 # Import functions
 # ----------------
@@ -51,9 +48,7 @@ n_points = 1 + duration_ms/time_interval_ms
 
 DF = data.frame(seq=seq(0, n_points-1))
 DF$time_ms = DF$seq * time_interval_ms
-DF$tide_speed_x = 0
-DF$tide_speed_x[DF$time_ms<parseDurationsToMillis(TIDE1_DURATION)] = TIDE1_SPEED_X
-DF$tide_speed_x[DF$time_ms>duration_ms-parseDurationsToMillis(TIDE2_DURATION)] = TIDE2_SPEED_X
+DF$tide_speed_x = TIDE_SPEED_X * sin(2*pi*(DF$seq-1)/(n_points-1))
 
 DF.gps = data.frame(seq=seq(0, n_points-1))
 DF.gps$x = NA
@@ -88,7 +83,7 @@ simulate = function(i, df, bearing_FUN) {
   df
 }
 
-CONSTANT_BEARING = pi/2+0.095 # optimal value obtained by trial and error!
+CONSTANT_BEARING = pi/2+0.047 # optimal value obtained by trial and error!
 for (i in seq(1, n_points-1)) {
   DF.gps = simulate(i, DF.gps, bearing_FUN=function(delta.vector) { angleOf(delta.vector) })
   DF.trad = simulate(i, DF.trad, bearing_FUN=function(delta.vector) { CONSTANT_BEARING })
