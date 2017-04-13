@@ -88,9 +88,10 @@ simulate = function(i, df, bearing_FUN) {
   df
 }
 
+CONSTANT_BEARING = pi/2+0.095 # optimal value obtained by trial and error!
 for (i in seq(1, n_points-1)) {
   DF.gps = simulate(i, DF.gps, bearing_FUN=function(delta.vector) { angleOf(delta.vector) })
-  DF.trad = simulate(i, DF.trad, bearing_FUN=function(delta.vector) { pi/2+0.095 }) # optimal value obtained by trial and error!
+  DF.trad = simulate(i, DF.trad, bearing_FUN=function(delta.vector) { CONSTANT_BEARING })
 }
 
 arrival.gps = min(which(is.na(DF.gps$brg)))
