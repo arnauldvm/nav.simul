@@ -123,6 +123,7 @@ lines(DF$time_ms/HOUR_MS, DF.trad$y, type="l", col="blue")
 points(DF$time_ms[1]/HOUR_MS, DF.gps$y[1], type="p")
 points(DF$time_ms[arrival.gps]/HOUR_MS, DF.gps$y[arrival.gps], type="p", col="red")
 points(DF$time_ms[arrival.trad]/HOUR_MS, DF.trad$y[arrival.trad], type="p", col="blue")
+legend("topleft", legend=sprintf("Delay = %.0f min", (DF$time_ms[arrival.gps]-DF$time_ms[arrival.trad])/1000/60))
 
 plot(DF.gps$x, DF$time_ms/HOUR_MS, type="l", col="red", ylab="time(h)", main="Progression(x)",
      xlim=c(min(DF.gps$x, DF.trad$x), max(DF.gps$x, DF.trad$x))
