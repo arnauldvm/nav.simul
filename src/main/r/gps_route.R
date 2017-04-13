@@ -99,6 +99,8 @@ arrival.trad = min(which(is.na(DF.trad$brg)))
 
 # Plotting
 
+plot(DF$tide_speed_x, DF$time_ms/HOUR_MS, type="l", ylab="time(h)", main="Tide(kn)")
+
 plot(DF$time_ms/HOUR_MS, DF.gps$y, type="l", col="red", xlab="time(h)", main="Progression(y)",
      ylim=c(min(DF.gps$y, DF.trad$y), max(DF.gps$y, DF.trad$y))
 )
