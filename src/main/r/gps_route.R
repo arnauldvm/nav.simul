@@ -17,6 +17,9 @@ TGT_POS = list(x=0, y=100)
 # speed unit is in kn = nmi/h
 BOAT_SPEED = 10
 TIDE_SPEED_X = 5
+TIDE_SLOT_DURATION = "5h" # For square tide only
+TIDE_TYPE = "SIN"
+# TIDE_TYPE = "SQUARE"
 
 # Import functions
 # ----------------
@@ -48,7 +51,16 @@ n_points = 1 + duration_ms/time_interval_ms
 
 DF = data.frame(seq=seq(0, n_points-1))
 DF$time_ms = DF$seq * time_interval_ms
-DF$tide_speed_x = TIDE_SPEED_X * sin(2*pi*(DF$seq-1)/(n_points-1))
+DF$tide_speed_x = switch(TIDE_TYPE,
+       SIN = function() {
+         TIDE_SPEED_X * sin(2*pi*(DF$seq-1)/(n_points-1))
+       },
+       SQUARE = function() {
+         d = rep(0, times=n_points)
+         d[DF$time_ms<parseDurationsToMillis(TIDE_SLOT_DURATION)] = +TIDE_SPEED_X
+         d[DF$time_ms>duration_ms-parseDurationsToMillis(TIDE_SLOT_DURATION)] = -TIDE_SPEED_X
+         d
+       })()
 
 DF.gps = data.frame(seq=seq(0, n_points-1))
 DF.gps$x = NA
@@ -83,7 +95,10 @@ simulate = function(i, df, bearing_FUN) {
   df
 }
 
-CONSTANT_BEARING = pi/2+0.047 # optimal value obtained by trial and error!
+CONSTANT_BEARING = switch(TIDE_TYPE,
+  SIN = pi/2+0.047, # optimal value obtained by trial and error!
+  SQUARE = pi/2+0.095 # optimal value obtained by trial and error!
+)
 for (i in seq(1, n_points-1)) {
   DF.gps = simulate(i, DF.gps, bearing_FUN=function(delta.vector) { angleOf(delta.vector) })
   DF.trad = simulate(i, DF.trad, bearing_FUN=function(delta.vector) { CONSTANT_BEARING })
