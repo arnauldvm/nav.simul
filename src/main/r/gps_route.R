@@ -113,6 +113,7 @@ CONSTANT_BEARING = switch(TIDE_TYPE,
   SQUARE = pi/2+0.095 # optimal value obtained by trial and error!
 )
 for (i in seq(1, n_points-1)) {
+  # TODO: Should add a third strategy: the skipper trying to follow the calculated route
   DF.gps = simulate(i, DF.gps, bearing_FUN=function(delta.vector) { angleOf(delta.vector) })
   DF.trad = simulate(i, DF.trad, bearing_FUN=function(delta.vector) { CONSTANT_BEARING })
 }
