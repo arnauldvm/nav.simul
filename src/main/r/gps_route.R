@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 ##################################
 # GPS route navigation simulation
 ##################################
@@ -121,6 +123,11 @@ for (i in seq(1, n_points-1)) {
 arrival.gps = min(which(is.na(DF.gps$brg)))
 arrival.trad = min(which(is.na(DF.trad$brg)))
 
+min_x = min(DF.gps$x, DF.trad$x)
+max_x = max(DF.gps$x, DF.trad$x)
+min_y = min(DF.gps$y, DF.trad$y)
+max_y = max(DF.gps$y, DF.trad$y)
+
 # Plotting
 
 png(filename=file.path(tgt.dir, "tide.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
@@ -128,9 +135,7 @@ plot(DF$tide_speed_x, DF$time_ms/HOUR_MS, type="l", ylab="time(h)", main="Tide(k
 dev.off()
 
 png(filename=file.path(tgt.dir, "progression_y.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
-plot(DF$time_ms/HOUR_MS, DF.gps$y, type="l", col="red", xlab="time(h)", main="Progression(y)",
-     ylim=c(min(DF.gps$y, DF.trad$y), max(DF.gps$y, DF.trad$y))
-)
+plot(DF$time_ms/HOUR_MS, DF.gps$y, type="l", col="red", xlab="time(h)", main="Progression(y)", ylim=c(min_y, max_y))
 lines(DF$time_ms/HOUR_MS, DF.trad$y, type="l", col="blue")
 points(DF$time_ms[1]/HOUR_MS, DF.gps$y[1], type="p")
 points(DF$time_ms[arrival.gps]/HOUR_MS, DF.gps$y[arrival.gps], type="p", col="red")
@@ -139,9 +144,7 @@ legend("topleft", legend=sprintf("Delay = %.0f min", (DF$time_ms[arrival.gps]-DF
 dev.off()
 
 png(filename=file.path(tgt.dir, "progression_x.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
-plot(DF.gps$x, DF$time_ms/HOUR_MS, type="l", col="red", ylab="time(h)", main="Progression(x)",
-     xlim=c(min(DF.gps$x, DF.trad$x), max(DF.gps$x, DF.trad$x))
-)
+plot(DF.gps$x, DF$time_ms/HOUR_MS, type="l", col="red", ylab="time(h)", main="Progression(x)", xlim=c(min_x, max_x))
 lines(DF.trad$x, DF$time_ms/HOUR_MS, type="l", col="blue")
 points(DF.gps$x[1], DF$time_ms[1]/HOUR_MS, type="p")
 points(DF.gps$x[arrival.gps], DF$time_ms[arrival.gps]/HOUR_MS, type="p", col="red")
@@ -156,10 +159,7 @@ points(DF$time_ms[c(1, arrival.trad-1)]/HOUR_MS, DF.trad$brg[c(1, arrival.trad-1
 dev.off()
 
 png(filename=file.path(tgt.dir, "course.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
-plot(DF.gps$x, DF.gps$y, type="l", col="red", main="Course",
-     xlim=c(min(DF.gps$x, DF.trad$x), max(DF.gps$x, DF.trad$x)),
-     ylim=c(min(DF.gps$y, DF.trad$y), max(DF.gps$y, DF.trad$y))
-)
+plot(DF.gps$x, DF.gps$y, type="l", col="red", main="Course", xlim=c(min_x, max_x), ylim=c(min_y, max_y))
 lines(DF.trad$x, DF.trad$y, type="l", col="blue")
 points(c(SRC_POS$x, TGT_POS$x), c(SRC_POS$y, TGT_POS$y), type="p")
 legend("left", legend=c("Traditional", "GPS"), lty=c(1,1), col=c("blue", "red"))
