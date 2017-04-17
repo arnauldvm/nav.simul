@@ -124,10 +124,10 @@ for (i in seq(1, n_points-1)) {
 arrival.gps = min(which(is.na(DF.gps$brg)))
 arrival.trad = min(which(is.na(DF.trad$brg)))
 
-min_x = min(DF.gps$x, DF.trad$x)
-max_x = max(DF.gps$x, DF.trad$x)
-min_y = min(DF.gps$y, DF.trad$y)
-max_y = max(DF.gps$y, DF.trad$y)
+min_x = min(DF.gps$x, DF.trad$x, na.rm=T)
+max_x = max(DF.gps$x, DF.trad$x, na.rm=T)
+min_y = min(DF.gps$y, DF.trad$y, na.rm=T)
+max_y = max(DF.gps$y, DF.trad$y, na.rm=T)
 min_brg = min(DF.gps$brg, DF.trad$brg, na.rm=T)
 max_brg = max(DF.gps$brg, DF.trad$brg, na.rm=T)
 
