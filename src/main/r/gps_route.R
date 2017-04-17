@@ -82,6 +82,7 @@ DF.gps$y = NA
 DF.gps$brg = NA
 DF.gps[1, c('x','y')] = SRC_POS
 
+DF.route = DF.gps
 DF.trad = DF.gps
 
 # Start simulation
@@ -92,6 +93,8 @@ simulate = function(i, df, bearing_FUN) {
   last.pos = df[i, c('x','y')]
   delta.vector = rowToVector(TGT_POS)-rowToVector(last.pos)
   BTW = angleOf(delta.vector) # Bearing To Waypoint
+  XTE = last.pos$x # Cross-Track Error
+     # This formula is valid only because initial route is perfectly vertical!
   remaining.distance = norm(delta.vector, "f")
   
   if (remaining.distance<speed_increment) {
@@ -99,7 +102,7 @@ simulate = function(i, df, bearing_FUN) {
     bearing = NA
     next.pos = last.pos
   } else {
-    bearing = bearing_FUN(BTW)
+    bearing = bearing_FUN(BTW, XTE)
     next.pos = last.pos + speed_increment*c(cos(bearing), sin(bearing))
     # Add tide effect:
     next.pos[1] = next.pos[1] + DF$tide_speed_x[i+1]*time_interval_h
@@ -116,20 +119,21 @@ CONSTANT_BEARING = switch(TIDE_TYPE,
   SQUARE = pi/2+0.095 # optimal value obtained by trial and error!
 )
 for (i in seq(1, n_points-1)) {
-  # TODO: Should add a third strategy: the skipper trying to follow the calculated route
-  DF.gps = simulate(i, DF.gps, bearing_FUN=function(BTW) { BTW })
-  DF.trad = simulate(i, DF.trad, bearing_FUN=function(BTW) { CONSTANT_BEARING })
+  DF.gps = simulate(i, DF.gps, bearing_FUN=function(BTW, XTE) { BTW })
+  DF.route = simulate(i, DF.route, bearing_FUN=function(BTW, XTE) { BTW + pi/2-angleOf(c(XTE, speed_increment)) })
+  DF.trad = simulate(i, DF.trad, bearing_FUN=function(BTW, XTE) { CONSTANT_BEARING })
 }
 
 arrival.gps = min(which(is.na(DF.gps$brg)))
+arrival.route = min(which(is.na(DF.route$brg)))
 arrival.trad = min(which(is.na(DF.trad$brg)))
 
-min_x = min(DF.gps$x, DF.trad$x, na.rm=T)
-max_x = max(DF.gps$x, DF.trad$x, na.rm=T)
-min_y = min(DF.gps$y, DF.trad$y, na.rm=T)
-max_y = max(DF.gps$y, DF.trad$y, na.rm=T)
-min_brg = min(DF.gps$brg, DF.trad$brg, na.rm=T)
-max_brg = max(DF.gps$brg, DF.trad$brg, na.rm=T)
+min_x = min(DF.gps$x, DF.route$x, DF.trad$x, na.rm=T)
+max_x = max(DF.gps$x, DF.route$x, DF.trad$x, na.rm=T)
+min_y = min(DF.gps$y, DF.route$y, DF.trad$y, na.rm=T)
+max_y = max(DF.gps$y, DF.route$y, DF.trad$y, na.rm=T)
+min_brg = min(DF.gps$brg, DF.route$brg, DF.trad$brg, na.rm=T)
+max_brg = max(DF.gps$brg, DF.route$brg, DF.trad$brg, na.rm=T)
 
 # Plotting
 
@@ -139,31 +143,41 @@ dev.off()
 
 png(filename=file.path(tgt.dir, "progression_y.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
 plot(DF$time_ms/HOUR_MS, DF.gps$y, type="l", col="red", xlab="time(h)", main="Progression(y)", ylim=c(min_y, max_y))
+lines(DF$time_ms/HOUR_MS, DF.route$y, type="l", col="purple")
 lines(DF$time_ms/HOUR_MS, DF.trad$y, type="l", col="blue")
 points(DF$time_ms[1]/HOUR_MS, SRC_POS$y, type="p")
 points(DF$time_ms[arrival.gps]/HOUR_MS, DF.gps$y[arrival.gps], type="p", col="red")
+points(DF$time_ms[arrival.route]/HOUR_MS, DF.route$y[arrival.route], type="p", col="purple")
 points(DF$time_ms[arrival.trad]/HOUR_MS, DF.trad$y[arrival.trad], type="p", col="blue")
-legend("topleft", legend=sprintf("Delay = %.0f min", (DF$time_ms[arrival.gps]-DF$time_ms[arrival.trad])/1000/60))
+legend("topleft", legend=sprintf("Delay = %.0f min (GPS)\nDelay = %0.f min (route)",
+                           (DF$time_ms[arrival.gps]-DF$time_ms[arrival.trad])/1000/60,
+                           (DF$time_ms[arrival.route]-DF$time_ms[arrival.trad])/1000/60
+))
 dev.off()
 
 png(filename=file.path(tgt.dir, "progression_x.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
 plot(DF.gps$x, DF$time_ms/HOUR_MS, type="l", col="red", ylab="time(h)", main="Progression(x)", xlim=c(min_x, max_x))
+lines(DF.route$x, DF$time_ms/HOUR_MS, type="l", col="purple")
 lines(DF.trad$x, DF$time_ms/HOUR_MS, type="l", col="blue")
 points(SRC_POS$x, DF$time_ms[1]/HOUR_MS, type="p")
 points(DF.gps$x[arrival.gps], DF$time_ms[arrival.gps]/HOUR_MS, type="p", col="red")
+points(DF.route$x[arrival.route], DF$time_ms[arrival.route]/HOUR_MS, type="p", col="purple")
 points(DF.trad$x[arrival.trad], DF$time_ms[arrival.trad]/HOUR_MS, type="p", col="blue")
 dev.off()
 
 png(filename=file.path(tgt.dir, "bearing.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
 plot(DF$time_ms/HOUR_MS, DF.gps$brg/pi*180, type="l", col="red", xlab="time(h)", ylab="degrees", main="Bearing", ylim=c(min_brg, max_brg)/pi*180)
+lines(DF$time_ms/HOUR_MS, DF.route$brg/pi*180, type="l", col="purple")
 lines(DF$time_ms/HOUR_MS, DF.trad$brg/pi*180, type="l", col="blue")
 points(DF$time_ms[c(1, arrival.gps-1)]/HOUR_MS, DF.gps$brg[c(1, arrival.gps-1)]/pi*180, type="p", col="red")
+points(DF$time_ms[c(1, arrival.route-1)]/HOUR_MS, DF.route$brg[c(1, arrival.route-1)]/pi*180, type="p", col="purple")
 points(DF$time_ms[c(1, arrival.trad-1)]/HOUR_MS, DF.trad$brg[c(1, arrival.trad-1)]/pi*180, type="p", col="blue")
 dev.off()
 
 png(filename=file.path(tgt.dir, "course.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
 plot(DF.gps$x, DF.gps$y, type="l", col="red", main="Course", xlim=c(min_x, max_x), ylim=c(min_y, max_y))
+lines(DF.route$x, DF.route$y, type="l", col="purple")
 lines(DF.trad$x, DF.trad$y, type="l", col="blue")
 points(c(SRC_POS$x, TGT_POS$x), c(SRC_POS$y, TGT_POS$y), type="p")
-legend("left", legend=c("Traditional", "GPS"), lty=c(1,1), col=c("blue", "red"))
+legend("topright", legend=c("Traditional", "Route", "GPS"), lty=c(1,1), col=c("blue", "purple", "red"))
 dev.off()
