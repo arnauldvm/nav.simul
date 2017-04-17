@@ -91,6 +91,7 @@ speed_increment = BOAT_SPEED*time_interval_h
 simulate = function(i, df, bearing_FUN) {
   last.pos = df[i, c('x','y')]
   delta.vector = rowToVector(TGT_POS)-rowToVector(last.pos)
+  BTW = angleOf(delta.vector) # Bearing To Waypoint
   remaining.distance = norm(delta.vector, "f")
   
   if (remaining.distance<speed_increment) {
@@ -98,7 +99,7 @@ simulate = function(i, df, bearing_FUN) {
     bearing = NA
     next.pos = last.pos
   } else {
-    bearing = bearing_FUN(delta.vector)
+    bearing = bearing_FUN(BTW)
     next.pos = last.pos + speed_increment*c(cos(bearing), sin(bearing))
     # Add tide effect:
     next.pos[1] = next.pos[1] + DF$tide_speed_x[i+1]*time_interval_h
@@ -116,8 +117,8 @@ CONSTANT_BEARING = switch(TIDE_TYPE,
 )
 for (i in seq(1, n_points-1)) {
   # TODO: Should add a third strategy: the skipper trying to follow the calculated route
-  DF.gps = simulate(i, DF.gps, bearing_FUN=function(delta.vector) { angleOf(delta.vector) })
-  DF.trad = simulate(i, DF.trad, bearing_FUN=function(delta.vector) { CONSTANT_BEARING })
+  DF.gps = simulate(i, DF.gps, bearing_FUN=function(BTW) { BTW })
+  DF.trad = simulate(i, DF.trad, bearing_FUN=function(BTW) { CONSTANT_BEARING })
 }
 
 arrival.gps = min(which(is.na(DF.gps$brg)))
