@@ -127,6 +127,8 @@ min_x = min(DF.gps$x, DF.trad$x)
 max_x = max(DF.gps$x, DF.trad$x)
 min_y = min(DF.gps$y, DF.trad$y)
 max_y = max(DF.gps$y, DF.trad$y)
+min_brg = min(DF.gps$brg, DF.trad$brg, na.rm=T)
+max_brg = max(DF.gps$brg, DF.trad$brg, na.rm=T)
 
 # Plotting
 
@@ -152,7 +154,7 @@ points(DF.trad$x[arrival.trad], DF$time_ms[arrival.trad]/HOUR_MS, type="p", col=
 dev.off()
 
 png(filename=file.path(tgt.dir, "bearing.png"), width=IMG_WIDTH, height=IMG_HEIGHT)
-plot(DF$time_ms/HOUR_MS, DF.gps$brg/pi*180, type="l", col="red", xlab="time(h)", ylab="degrees", main="Bearing")
+plot(DF$time_ms/HOUR_MS, DF.gps$brg/pi*180, type="l", col="red", xlab="time(h)", ylab="degrees", main="Bearing", ylim=c(min_brg, max_brg)/pi*180)
 lines(DF$time_ms/HOUR_MS, DF.trad$brg/pi*180, type="l", col="blue")
 points(DF$time_ms[c(1, arrival.gps-1)]/HOUR_MS, DF.gps$brg[c(1, arrival.gps-1)]/pi*180, type="p", col="red")
 points(DF$time_ms[c(1, arrival.trad-1)]/HOUR_MS, DF.trad$brg[c(1, arrival.trad-1)]/pi*180, type="p", col="blue")
